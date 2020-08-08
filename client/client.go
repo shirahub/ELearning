@@ -53,7 +53,7 @@ func panggilServer() {
 
 	msg, err := user.ConnectToServer(ctx, new(empty.Empty))
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		log.Fatalf("Tidak bisa terhubung: %v", err)
 	}
 	fmt.Println("Message", msg.GetMessage())
 	menu()
