@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "/proto";
+
+package parkir;
+import "google/protobuf/empty.proto";
+
+service Connect {
+  rpc ConnectToServer (google.protobuf.Empty) returns (ServerReply) {}
+}
+
+message ServerReply {
+  string message = 1;
+}
+
+
