@@ -10,11 +10,22 @@ service Connect {
   rpc ConnectToServer (google.protobuf.Empty) returns (ServerReply) {}
   rpc Soal (PilihanSoal) returns (SoalList) {}
   rpc Hasil (KumpulanJawaban) returns (Result) {}
+  rpc AmbilTema(PilihTema) returns (TemaList) {}
 }
+
 
 //ini adalah kumpulan func (seperti interface)
 service Guru {
   rpc KirimSoalKeServer (PaketSoal) returns (ServerGuruReply) {}
+}
+message TemaList {
+  repeated string TemaList = 1;
+}
+
+message PilihTema {
+    string Tingkat = 1;
+    string Kelas = 2;
+    string Matpel = 3;
 }
 
 //ini seperti objek

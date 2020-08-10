@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -116,6 +118,22 @@ func getSoal(tingkat string, kelas string, mapel string, temaSoal string) *pb.So
 	return soalList
 }
 
+func getTemaList(tingkat string, kelas string, matpel string) *pb.TemaList {
+	conn := ConnectServer()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	pilihTema := pb.PilihTema{Tingkat: tingkat, Kelas: kelas, Matpel: matpel}
+
+	TemaList, err := conn.AmbilTema(ctx, &pilihTema)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+
+	return TemaList
+}
+
 func menuSiswa() {
 	var menuTingkat int = 0
 
@@ -160,6 +178,7 @@ func menuSiswa() {
 				switch menuKelasSD {
 				case 1:
 					for menuMapelSD != 3 {
+					PILIHMAPEL:
 						var menuTemaSoalSD int = 0
 						kelas := "Kelas 1"
 						fmt.Println("\n\tMata Pelajaran")
@@ -170,68 +189,78 @@ func menuSiswa() {
 						fmt.Scanf("%d", &menuMapelSD)
 						fmt.Println("\nMapel yang dipilih", menuMapelSD)
 						fmt.Println()
-
+						nomorterakhirTema := 1
 						switch menuMapelSD {
 						case 1:
-							for menuTemaSoalSD != 3 {
+							for menuTemaSoalSD != nomorterakhirTema {
+								nomorterakhirTema = 1
 								mapel := "Bahasa Inggris"
+								temaList := getTemaList(tingkat, kelas, mapel)
+								arrayTema := temaList.TemaList
+								sort.Strings(arrayTema)
 								fmt.Println("\n\tTema Soal")
-								fmt.Println("1. BAB I")
-								fmt.Println("2. BAB II")
-								fmt.Println("3. Kembali")
+
+								for j := 0; j < len(arrayTema); j++ {
+									stringnomor := strconv.Itoa(j + 1)
+									fmt.Println(stringnomor + ". " + arrayTema[j])
+									nomorterakhirTema++
+								}
+								stringnomor := strconv.Itoa(nomorterakhirTema)
+								fmt.Println(stringnomor + ". Kembali")
 								fmt.Print("Pilih mapel :\t")
 								fmt.Scanf("%d", &menuTemaSoalSD)
+
+								if menuTemaSoalSD == nomorterakhirTema {
+									goto PILIHMAPEL
+								}
 								fmt.Println("\nMapel yang dipilih", menuTemaSoalSD)
 								fmt.Println()
+								temaSoal := arrayTema[menuTemaSoalSD-1]
 
-								switch menuTemaSoalSD {
-								case 1:
-									temaSoal := "Bab 1"
+								soal := getSoal(tingkat, kelas, mapel, temaSoal)
 
-									soal := getSoal(tingkat, kelas, mapel, temaSoal)
+								//fmt.Println(soal)
+								//fmt.Println()
 
-									//fmt.Println(soal)
-									//fmt.Println()
+								for i := 0; i < len(soal.SoalList); i++ {
+									fmt.Println("Pertanyaan no", i+1)
+									fmt.Println(soal.SoalList[i].Pertanyaan)
 
-									for i := 0; i < len(soal.SoalList); i++ {
-										fmt.Println("Pertanyaan no", i+1)
-										fmt.Println(soal.SoalList[i].Pertanyaan)
-
-										for j := 0; j < len(soal.SoalList[i].Pilihan); j++ {
-											if j == 0 {
-												fmt.Println("a.", soal.SoalList[i].Pilihan[j])
-											} else if j == 1 {
-												fmt.Println("b.", soal.SoalList[i].Pilihan[j])
-											} else if j == 2 {
-												fmt.Println("c.", soal.SoalList[i].Pilihan[j])
-											} else if j == 3 {
-												fmt.Println("d.", soal.SoalList[i].Pilihan[j])
-											}
-										}
-										fmt.Print("Pilih jawaban :\t")
-										fmt.Scanf("%s", &pilihJawaban)
-										if pilihJawaban == "a" {
-											jawaban := soal.SoalList[i].Pilihan[0]
-											kumpulanJawaban = append(kumpulanJawaban, jawaban)
-										} else if pilihJawaban == "b" {
-											jawaban := soal.SoalList[i].Pilihan[1]
-											kumpulanJawaban = append(kumpulanJawaban, jawaban)
-										} else if pilihJawaban == "c" {
-											jawaban := soal.SoalList[i].Pilihan[2]
-											kumpulanJawaban = append(kumpulanJawaban, jawaban)
-										} else if pilihJawaban == "d" {
-											jawaban := soal.SoalList[i].Pilihan[3]
-											kumpulanJawaban = append(kumpulanJawaban, jawaban)
+									for j := 0; j < len(soal.SoalList[i].Pilihan); j++ {
+										if j == 0 {
+											fmt.Println("a.", soal.SoalList[i].Pilihan[j])
+										} else if j == 1 {
+											fmt.Println("b.", soal.SoalList[i].Pilihan[j])
+										} else if j == 2 {
+											fmt.Println("c.", soal.SoalList[i].Pilihan[j])
+										} else if j == 3 {
+											fmt.Println("d.", soal.SoalList[i].Pilihan[j])
 										}
 									}
-
-									hasil := Hasil(tingkat, kelas, mapel, temaSoal, kumpulanJawaban)
-
-									fmt.Println(hasil.Result)
-
-									kumpulanJawaban = []string{}
-									main()
+									fmt.Print("Pilih jawaban :\t")
+									fmt.Scanf("%s", &pilihJawaban)
+									if pilihJawaban == "a" {
+										jawaban := soal.SoalList[i].Pilihan[0]
+										kumpulanJawaban = append(kumpulanJawaban, jawaban)
+									} else if pilihJawaban == "b" {
+										jawaban := soal.SoalList[i].Pilihan[1]
+										kumpulanJawaban = append(kumpulanJawaban, jawaban)
+									} else if pilihJawaban == "c" {
+										jawaban := soal.SoalList[i].Pilihan[2]
+										kumpulanJawaban = append(kumpulanJawaban, jawaban)
+									} else if pilihJawaban == "d" {
+										jawaban := soal.SoalList[i].Pilihan[3]
+										kumpulanJawaban = append(kumpulanJawaban, jawaban)
+									}
 								}
+
+								hasil := Hasil(tingkat, kelas, mapel, temaSoal, kumpulanJawaban)
+
+								fmt.Println(hasil.Result)
+
+								kumpulanJawaban = []string{}
+								main()
+
 							}
 						}
 					}
@@ -430,7 +459,7 @@ func buatSoal() {
 	fmt.Println(kumpulansoal)
 	paketSoal := PaketSoal{tingkat, kelas, mapel, tema, kumpulansoal}
 	KirimSoalBuatan(paketSoal)
-
+	main()
 }
 
 //============================================================================

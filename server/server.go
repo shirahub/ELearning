@@ -124,6 +124,22 @@ func (s *server) Hasil(ctx context.Context, kj *pb.KumpulanJawaban) (*pb.Result,
 	return &notice2, nil
 }
 
+func (s *server) AmbilTema(ctx context.Context, pt *pb.PilihTema) (*pb.TemaList, error) {
+
+	var result []string
+
+	if v, found := kumpulanSoal[pt.GetKelas()][pt.GetMatpel()]; found {
+
+		for k, _ := range v {
+			result = append(result, k)
+		}
+
+		fmt.Println(result)
+	}
+	temaList := pb.TemaList{TemaList: result}
+	return &temaList, nil
+}
+
 func (s *server) KirimSoalKeServer(ctx context.Context, req *pb.PaketSoal) (*pb.ServerGuruReply, error) {
 	// fmt.Println(req.GetTingkat())
 	// fmt.Println(req.GetKelas())
@@ -170,10 +186,10 @@ func main() {
 		log.Fatalf("failed to serve: %v", err)
 	}
 
-	// pb.RegisterGuruServer(s, &server{})
-	// if err := s.Serve(lis); err != nil {
-	// 	log.Fatalf("failed to serve: %v", err)
-	// }
+	pb.RegisterGuruServer(s, &server{})
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
 
 func saveSoal(ti string, k string, m string, te string, s []Soal) {
@@ -206,55 +222,55 @@ func loadSoal() {
 	kumpulanSoal["Kelas 1"]["Bahasa Inggris"] = map[string][]Soal{}
 	kumpulanSoal["Kelas 1"]["Bahasa Inggris"]["Bab 1"] = arraySoal
 
-	//Kelas 1 - Bahasa Inggris - Bab 2
-	// tempsoal1 = Soal{"What are you doing?", "I am studying English.", []string{"I am studying English.", "I eat bread for breakfast.", "I like my bicycle.", "I am a student."}}
-	// tempsoal2 = Soal{"Mom ... cooking dinner right now.", "is", []string{"is", "am", "are", "was"}}
-	// tempsoal3 = Soal{"My friends ... staying at home.", "are", []string{"are", "were", "is", "am"}}
-	// tempsoal4 = Soal{"Dad is (write)... a letter for his friend.", "writing", []string{"writing", "writeing", "writying", "writiing"}}
-	// tempsoal5 = Soal{"Budi and Bambang ... best friends", "are", []string{"am", "is", "was", "are"}}
+	// Kelas 1 - Bahasa Inggris - Bab 2
+	tempsoal1 = Soal{"What are you doing?", "I am studying English.", []string{"I am studying English.", "I eat bread for breakfast.", "I like my bicycle.", "I am a student."}}
+	tempsoal2 = Soal{"Mom ... cooking dinner right now.", "is", []string{"is", "am", "are", "was"}}
+	tempsoal3 = Soal{"My friends ... staying at home.", "are", []string{"are", "were", "is", "am"}}
+	tempsoal4 = Soal{"Dad is (write)... a letter for his friend.", "writing", []string{"writing", "writeing", "writying", "writiing"}}
+	tempsoal5 = Soal{"Budi and Bambang ... best friends", "are", []string{"am", "is", "was", "are"}}
 
-	// arraySoal = make([]Soal, 0)
-	// arraySoal = append(arraySoal, tempsoal1)
-	// arraySoal = append(arraySoal, tempsoal2)
-	// arraySoal = append(arraySoal, tempsoal3)
-	// arraySoal = append(arraySoal, tempsoal4)
-	// arraySoal = append(arraySoal, tempsoal5)
+	arraySoal = make([]Soal, 0)
+	arraySoal = append(arraySoal, tempsoal1)
+	arraySoal = append(arraySoal, tempsoal2)
+	arraySoal = append(arraySoal, tempsoal3)
+	arraySoal = append(arraySoal, tempsoal4)
+	arraySoal = append(arraySoal, tempsoal5)
 
-	// kumpulanSoal["Kelas 1"]["Bahasa Inggris"]["Bab 2"] = arraySoal
+	kumpulanSoal["Kelas 1"]["Bahasa Inggris"]["Bab 2"] = arraySoal
 
-	// //Kelas 2 - Bahasa Inggris - Bab 1
-	// tempsoal1 = Soal{"I like airplanes, I want to be a ... ", "Pilot", []string{"Pilot", "Nurse", "Teacher", "Youtuber"}}
-	// tempsoal2 = Soal{"Mary likes animals, she wants to work in a ... ", "Zoo", []string{"Zoo", "School", "Hospital", "Office"}}
-	// tempsoal3 = Soal{"Bob likes to draw, he wants to be a ... ", "Painter", []string{"Programmer", "Engineer", "Painter", "Musician"}}
-	// tempsoal4 = Soal{"Gordon likes to cook, he wants to be a ...", "Chef", []string{"Chef", "Racer", "Athlete", "Programmer"}}
-	// tempsoal5 = Soal{"Patrick likes to act, he wants to be an ...", "Actor", []string{"Actor", "Actress", "Athlete", "Attorney"}}
+	//Kelas 2 - Bahasa Inggris - Bab 1
+	tempsoal1 = Soal{"I like airplanes, I want to be a ... ", "Pilot", []string{"Pilot", "Nurse", "Teacher", "Youtuber"}}
+	tempsoal2 = Soal{"Mary likes animals, she wants to work in a ... ", "Zoo", []string{"Zoo", "School", "Hospital", "Office"}}
+	tempsoal3 = Soal{"Bob likes to draw, he wants to be a ... ", "Painter", []string{"Programmer", "Engineer", "Painter", "Musician"}}
+	tempsoal4 = Soal{"Gordon likes to cook, he wants to be a ...", "Chef", []string{"Chef", "Racer", "Athlete", "Programmer"}}
+	tempsoal5 = Soal{"Patrick likes to act, he wants to be an ...", "Actor", []string{"Actor", "Actress", "Athlete", "Attorney"}}
 
-	// arraySoal = make([]Soal, 0)
-	// arraySoal = append(arraySoal, tempsoal1)
-	// arraySoal = append(arraySoal, tempsoal2)
-	// arraySoal = append(arraySoal, tempsoal3)
-	// arraySoal = append(arraySoal, tempsoal4)
-	// arraySoal = append(arraySoal, tempsoal5)
+	arraySoal = make([]Soal, 0)
+	arraySoal = append(arraySoal, tempsoal1)
+	arraySoal = append(arraySoal, tempsoal2)
+	arraySoal = append(arraySoal, tempsoal3)
+	arraySoal = append(arraySoal, tempsoal4)
+	arraySoal = append(arraySoal, tempsoal5)
 
-	// kumpulanSoal["Kelas 2"] = map[string]map[string][]Soal{}
-	// kumpulanSoal["Kelas 2"]["Bahasa Inggris"] = map[string][]Soal{}
-	// kumpulanSoal["Kelas 2"]["Bahasa Inggris"]["Bab 1"] = arraySoal
+	kumpulanSoal["Kelas 2"] = map[string]map[string][]Soal{}
+	kumpulanSoal["Kelas 2"]["Bahasa Inggris"] = map[string][]Soal{}
+	kumpulanSoal["Kelas 2"]["Bahasa Inggris"]["Bab 1"] = arraySoal
 
-	// //Kelas 2 - Bahasa Inggris - Bab 2
-	// tempsoal1 = Soal{"Sam yawns all day, he is ...", "Sleepy", []string{"Sleepy", "Hungry", "Angry", "Sad"}}
-	// tempsoal2 = Soal{"I skipped the breakfast this morning, now I am very ...", "Hungry", []string{"Hungry", "Sleepy", "Bored", "Tired"}}
-	// tempsoal3 = Soal{"Mom is ... at me because I lost her tupperware", "Angry", []string{"Angry", "Happy", "Sad", "Bored"}}
-	// tempsoal4 = Soal{"Alice forget her water bottle, now she is ...", "Thirsty", []string{"Thirsty", "Hungry", "Sleepy", "Bored"}}
-	// tempsoal5 = Soal{"Psyduck uses Confuse, now I am ...", "Confused", []string{"Confused", "Sleepy", "Hungry", "Angry"}}
+	//Kelas 2 - Bahasa Inggris - Bab 2
+	tempsoal1 = Soal{"Sam yawns all day, he is ...", "Sleepy", []string{"Sleepy", "Hungry", "Angry", "Sad"}}
+	tempsoal2 = Soal{"I skipped the breakfast this morning, now I am very ...", "Hungry", []string{"Hungry", "Sleepy", "Bored", "Tired"}}
+	tempsoal3 = Soal{"Mom is ... at me because I lost her tupperware", "Angry", []string{"Angry", "Happy", "Sad", "Bored"}}
+	tempsoal4 = Soal{"Alice forget her water bottle, now she is ...", "Thirsty", []string{"Thirsty", "Hungry", "Sleepy", "Bored"}}
+	tempsoal5 = Soal{"Psyduck uses Confuse, now I am ...", "Confused", []string{"Confused", "Sleepy", "Hungry", "Angry"}}
 
-	// arraySoal = make([]Soal, 0)
-	// arraySoal = append(arraySoal, tempsoal1)
-	// arraySoal = append(arraySoal, tempsoal2)
-	// arraySoal = append(arraySoal, tempsoal3)
-	// arraySoal = append(arraySoal, tempsoal4)
-	// arraySoal = append(arraySoal, tempsoal5)
+	arraySoal = make([]Soal, 0)
+	arraySoal = append(arraySoal, tempsoal1)
+	arraySoal = append(arraySoal, tempsoal2)
+	arraySoal = append(arraySoal, tempsoal3)
+	arraySoal = append(arraySoal, tempsoal4)
+	arraySoal = append(arraySoal, tempsoal5)
 
-	// kumpulanSoal["Kelas 2"]["Bahasa Inggris"]["Bab 2"] = arraySoal
+	kumpulanSoal["Kelas 2"]["Bahasa Inggris"]["Bab 2"] = arraySoal
 
-	fmt.Println(kumpulanSoal)
+	// fmt.Println(kumpulanSoal)
 }

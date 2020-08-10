@@ -4,7 +4,6 @@ package proto
 
 import (
 	context "context"
-
 	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -22,6 +21,7 @@ type ConnectClient interface {
 	ConnectToServer(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ServerReply, error)
 	Soal(ctx context.Context, in *PilihanSoal, opts ...grpc.CallOption) (*SoalList, error)
 	Hasil(ctx context.Context, in *KumpulanJawaban, opts ...grpc.CallOption) (*Result, error)
+	AmbilTema(ctx context.Context, in *PilihTema, opts ...grpc.CallOption) (*TemaList, error)
 }
 
 type connectClient struct {
@@ -59,6 +59,15 @@ func (c *connectClient) Hasil(ctx context.Context, in *KumpulanJawaban, opts ...
 	return out, nil
 }
 
+func (c *connectClient) AmbilTema(ctx context.Context, in *PilihTema, opts ...grpc.CallOption) (*TemaList, error) {
+	out := new(TemaList)
+	err := c.cc.Invoke(ctx, "/SiswaService.Connect/AmbilTema", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ConnectServer is the server API for Connect service.
 // All implementations must embed UnimplementedConnectServer
 // for forward compatibility
@@ -66,6 +75,7 @@ type ConnectServer interface {
 	ConnectToServer(context.Context, *empty.Empty) (*ServerReply, error)
 	Soal(context.Context, *PilihanSoal) (*SoalList, error)
 	Hasil(context.Context, *KumpulanJawaban) (*Result, error)
+	AmbilTema(context.Context, *PilihTema) (*TemaList, error)
 	mustEmbedUnimplementedConnectServer()
 }
 
@@ -81,6 +91,9 @@ func (*UnimplementedConnectServer) Soal(context.Context, *PilihanSoal) (*SoalLis
 }
 func (*UnimplementedConnectServer) Hasil(context.Context, *KumpulanJawaban) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Hasil not implemented")
+}
+func (*UnimplementedConnectServer) AmbilTema(context.Context, *PilihTema) (*TemaList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AmbilTema not implemented")
 }
 func (*UnimplementedConnectServer) mustEmbedUnimplementedConnectServer() {}
 
@@ -142,6 +155,24 @@ func _Connect_Hasil_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Connect_AmbilTema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PilihTema)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConnectServer).AmbilTema(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SiswaService.Connect/AmbilTema",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConnectServer).AmbilTema(ctx, req.(*PilihTema))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Connect_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "SiswaService.Connect",
 	HandlerType: (*ConnectServer)(nil),
@@ -157,6 +188,10 @@ var _Connect_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Hasil",
 			Handler:    _Connect_Hasil_Handler,
+		},
+		{
+			MethodName: "AmbilTema",
+			Handler:    _Connect_AmbilTema_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
