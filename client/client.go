@@ -344,6 +344,10 @@ func buatArraySoal() []Soal {
 		soal, _ = reader.ReadString('\n')
 		soal = strings.Replace(soal, "\n", "", -1)
 		if soal == "selesai" {
+			if jumlahsoal == 0 {
+				fmt.Println("Anda belum membuat soal sama sekali... kembali ke menu...")
+				main()
+			}
 			fmt.Println("Input selesai")
 			return kumpulansoal
 		}
