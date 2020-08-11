@@ -420,7 +420,8 @@ func menuSiswa() {
 				kelasList := getKelasList(tingkat)
 				arrayKelas := kelasList.KelasList
 				sort.Strings(arrayKelas)
-				fmt.Println("\n\tSD")
+				fmt.Println("\nTINGKAT > KELAS ")
+				fmt.Println("\tSD")
 				for j := 0; j < len(arrayKelas); j++ {
 					stringnomor := strconv.Itoa(j + 1)
 					fmt.Println(stringnomor + ". " + arrayKelas[j])
@@ -446,7 +447,8 @@ func menuSiswa() {
 						mapelList := getMapelList(tingkat, kelas)
 						arrayMapel := mapelList.MapelList
 						sort.Strings(arrayMapel)
-						fmt.Println("\n\tMata Pelajaran")
+						fmt.Println("\nTINGKAT > KELAS > MAPEL ")
+						fmt.Println("\tMata Pelajaran")
 						for j := 0; j < len(arrayMapel); j++ {
 							stringnomor := strconv.Itoa(j + 1)
 							fmt.Println(stringnomor + ". " + arrayMapel[j])
@@ -468,7 +470,8 @@ func menuSiswa() {
 								temaList := getTemaList(tingkat, kelas, mapel)
 								arrayTema := temaList.TemaList
 								sort.Strings(arrayTema)
-								fmt.Println("\n\tTema Soal")
+								fmt.Println("\nTINGKAT > KELAS > MAPEL > TEMA")
+								fmt.Println("\tTema Soal")
 
 								for j := 0; j < len(arrayTema); j++ {
 									stringnomor := strconv.Itoa(j + 1)

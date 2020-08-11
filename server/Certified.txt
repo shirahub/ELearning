@@ -1,6 +1,6 @@
 SERTIFIKAT
-KELAS : Kelas 1
+KELAS : Kelas 2
 MAPEL : Bahasa Inggris
 TEMA : Bab 1
-NILAI : 100
-NAMA : Mamat
+NILAI : 80
+NAMA : Shirleen
