@@ -22,6 +22,8 @@ type ConnectClient interface {
 	Soal(ctx context.Context, in *PilihanSoal, opts ...grpc.CallOption) (*SoalList, error)
 	Hasil(ctx context.Context, in *KumpulanJawaban, opts ...grpc.CallOption) (*Result, error)
 	AmbilTema(ctx context.Context, in *PilihTema, opts ...grpc.CallOption) (*TemaList, error)
+	AmbilMapel(ctx context.Context, in *PilihMapel, opts ...grpc.CallOption) (*MapelList, error)
+	AmbilKelas(ctx context.Context, in *PilihKelas, opts ...grpc.CallOption) (*KelasList, error)
 }
 
 type connectClient struct {
@@ -68,6 +70,24 @@ func (c *connectClient) AmbilTema(ctx context.Context, in *PilihTema, opts ...gr
 	return out, nil
 }
 
+func (c *connectClient) AmbilMapel(ctx context.Context, in *PilihMapel, opts ...grpc.CallOption) (*MapelList, error) {
+	out := new(MapelList)
+	err := c.cc.Invoke(ctx, "/SiswaService.Connect/AmbilMapel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *connectClient) AmbilKelas(ctx context.Context, in *PilihKelas, opts ...grpc.CallOption) (*KelasList, error) {
+	out := new(KelasList)
+	err := c.cc.Invoke(ctx, "/SiswaService.Connect/AmbilKelas", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ConnectServer is the server API for Connect service.
 // All implementations must embed UnimplementedConnectServer
 // for forward compatibility
@@ -76,6 +96,8 @@ type ConnectServer interface {
 	Soal(context.Context, *PilihanSoal) (*SoalList, error)
 	Hasil(context.Context, *KumpulanJawaban) (*Result, error)
 	AmbilTema(context.Context, *PilihTema) (*TemaList, error)
+	AmbilMapel(context.Context, *PilihMapel) (*MapelList, error)
+	AmbilKelas(context.Context, *PilihKelas) (*KelasList, error)
 	mustEmbedUnimplementedConnectServer()
 }
 
@@ -94,6 +116,12 @@ func (*UnimplementedConnectServer) Hasil(context.Context, *KumpulanJawaban) (*Re
 }
 func (*UnimplementedConnectServer) AmbilTema(context.Context, *PilihTema) (*TemaList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AmbilTema not implemented")
+}
+func (*UnimplementedConnectServer) AmbilMapel(context.Context, *PilihMapel) (*MapelList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AmbilMapel not implemented")
+}
+func (*UnimplementedConnectServer) AmbilKelas(context.Context, *PilihKelas) (*KelasList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AmbilKelas not implemented")
 }
 func (*UnimplementedConnectServer) mustEmbedUnimplementedConnectServer() {}
 
@@ -173,6 +201,42 @@ func _Connect_AmbilTema_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Connect_AmbilMapel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PilihMapel)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConnectServer).AmbilMapel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SiswaService.Connect/AmbilMapel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConnectServer).AmbilMapel(ctx, req.(*PilihMapel))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Connect_AmbilKelas_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PilihKelas)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConnectServer).AmbilKelas(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SiswaService.Connect/AmbilKelas",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConnectServer).AmbilKelas(ctx, req.(*PilihKelas))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Connect_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "SiswaService.Connect",
 	HandlerType: (*ConnectServer)(nil),
@@ -192,6 +256,14 @@ var _Connect_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AmbilTema",
 			Handler:    _Connect_AmbilTema_Handler,
+		},
+		{
+			MethodName: "AmbilMapel",
+			Handler:    _Connect_AmbilMapel_Handler,
+		},
+		{
+			MethodName: "AmbilKelas",
+			Handler:    _Connect_AmbilKelas_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -268,6 +340,118 @@ var _Guru_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "KirimSoalKeServer",
 			Handler:    _Guru_KirimSoalKeServer_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "siswaservice.proto",
+}
+
+// DataClient is the client API for Data service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type DataClient interface {
+	CheckLogin(ctx context.Context, in *InputLogin, opts ...grpc.CallOption) (*UserData, error)
+	NewSignUp(ctx context.Context, in *User, opts ...grpc.CallOption) (*UserData, error)
+}
+
+type dataClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewDataClient(cc grpc.ClientConnInterface) DataClient {
+	return &dataClient{cc}
+}
+
+func (c *dataClient) CheckLogin(ctx context.Context, in *InputLogin, opts ...grpc.CallOption) (*UserData, error) {
+	out := new(UserData)
+	err := c.cc.Invoke(ctx, "/SiswaService.Data/CheckLogin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dataClient) NewSignUp(ctx context.Context, in *User, opts ...grpc.CallOption) (*UserData, error) {
+	out := new(UserData)
+	err := c.cc.Invoke(ctx, "/SiswaService.Data/NewSignUp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// DataServer is the server API for Data service.
+// All implementations must embed UnimplementedDataServer
+// for forward compatibility
+type DataServer interface {
+	CheckLogin(context.Context, *InputLogin) (*UserData, error)
+	NewSignUp(context.Context, *User) (*UserData, error)
+	mustEmbedUnimplementedDataServer()
+}
+
+// UnimplementedDataServer must be embedded to have forward compatible implementations.
+type UnimplementedDataServer struct {
+}
+
+func (*UnimplementedDataServer) CheckLogin(context.Context, *InputLogin) (*UserData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckLogin not implemented")
+}
+func (*UnimplementedDataServer) NewSignUp(context.Context, *User) (*UserData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewSignUp not implemented")
+}
+func (*UnimplementedDataServer) mustEmbedUnimplementedDataServer() {}
+
+func RegisterDataServer(s *grpc.Server, srv DataServer) {
+	s.RegisterService(&_Data_serviceDesc, srv)
+}
+
+func _Data_CheckLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InputLogin)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataServer).CheckLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SiswaService.Data/CheckLogin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataServer).CheckLogin(ctx, req.(*InputLogin))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Data_NewSignUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataServer).NewSignUp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SiswaService.Data/NewSignUp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataServer).NewSignUp(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Data_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "SiswaService.Data",
+	HandlerType: (*DataServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CheckLogin",
+			Handler:    _Data_CheckLogin_Handler,
+		},
+		{
+			MethodName: "NewSignUp",
+			Handler:    _Data_NewSignUp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

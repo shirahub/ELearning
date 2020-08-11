@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	"google.golang.org/grpc"
 )
@@ -16,13 +17,22 @@ const (
 )
 
 var kumpulanSoal = map[string]map[string]map[string][]Soal{
-	"Kelas 1": map[string]map[string][]Soal{},
-	"Kelas 2": map[string]map[string][]Soal{},
-	"Kelas 3": map[string]map[string][]Soal{},
-	"Kelas 4": map[string]map[string][]Soal{},
-	"Kelas 5": map[string]map[string][]Soal{},
-	"Kelas 6": map[string]map[string][]Soal{},
+	"Kelas 1":  map[string]map[string][]Soal{},
+	"Kelas 2":  map[string]map[string][]Soal{},
+	"Kelas 3":  map[string]map[string][]Soal{},
+	"Kelas 4":  map[string]map[string][]Soal{},
+	"Kelas 5":  map[string]map[string][]Soal{},
+	"Kelas 6":  map[string]map[string][]Soal{},
+	"Kelas 7":  map[string]map[string][]Soal{},
+	"Kelas 8":  map[string]map[string][]Soal{},
+	"Kelas 9":  map[string]map[string][]Soal{},
+	"Kelas 10": map[string]map[string][]Soal{},
+	"Kelas 11": map[string]map[string][]Soal{},
+	"Kelas 12": map[string]map[string][]Soal{},
+	"Umum":     map[string]map[string][]Soal{},
 }
+
+var userInSession userData
 
 //Soal dengan struct
 type Soal struct {
@@ -31,26 +41,39 @@ type Soal struct {
 	Pilihan    []string
 }
 
+type userData struct {
+	Username string
+	Password string
+	Nama     string
+	Umur     int32
+	Status   string
+}
+
+var userDataList = map[string]userData{}
+
 type server struct {
 	pb.UnimplementedConnectServer
 	pb.UnimplementedGuruServer
+	pb.UnimplementedDataServer
 }
 
 // type serverGuru struct {
 // 	pb.UnimplementedGuruServer
 // }
 
-func certified() {
+func certified(kelas string, mapel string, tema string, nilai string) {
 	f, err := os.Create("Certified.txt")
 	if err != nil {
 		fmt.Println(err)
 		f.Close()
 		return
 	}
-	d := []string{"CERTIFIED",
-		"TINGKAT, KELAS, MAPEL, TEMA",
-		"NILAI",
-		"NAMA"}
+
+	d := []string{"SERTIFIKAT",
+		("KELAS : " + kelas), ("MAPEL : " + mapel), ("TEMA : " + tema),
+		("NILAI : " + nilai),
+		("NAMA : " + userInSession.Nama),
+	}
 
 	for _, v := range d {
 		fmt.Fprintln(f, v)
@@ -94,28 +117,28 @@ func (s *server) Hasil(ctx context.Context, kj *pb.KumpulanJawaban) (*pb.Result,
 	var nilai int = 0
 	var correct int = 0
 	var notice string
+	kumpulanJawaban := kj.GetJawabanList()
 
 	if v, found := kumpulanSoal[kj.GetKelas()][kj.GetMapel()][kj.GetTemaSoal()]; found {
 		result = v
 	}
 
-	//fmt.Println(result)
-
-	for i := 0; i < len(kj.GetJawabanList()); i++ {
+	//koreksi jawaban
+	for i := 0; i < len(kumpulanJawaban); i++ {
 		fmt.Println(result[i].Jawaban)
-		fmt.Println(kj.GetJawabanList()[i])
-		if kj.GetJawabanList()[i] == result[i].Jawaban {
+		fmt.Println(kumpulanJawaban[i])
+		if kumpulanJawaban[i] == result[i].Jawaban {
 			correct++
 		}
 	}
 
-	nilai = (100 / len(kj.GetJawabanList())) * correct
+	nilai = (100 / len(kumpulanJawaban)) * correct
 
 	if nilai >= 70 {
-		notice = "Nilai " + string(nilai) + "\nSELAMAT\nKamu berhasil lulus tema soal ini.\nSilahkan cek sertifikatmu ya."
-		certified()
+		notice = "Nilai " + strconv.Itoa(nilai) + "\nSELAMAT\nKamu berhasil lulus tema soal ini.\nSilahkan cek sertifikatmu ya."
+		certified(kj.GetKelas(), kj.GetMapel(), kj.GetTemaSoal(), strconv.Itoa(nilai))
 	} else {
-		notice = "Nilai " + string(nilai) + "\nJANGAN PATAH SEMANGAT\nTetaplah berusaha."
+		notice = "Nilai " + strconv.Itoa(nilai) + "\nJANGAN PATAH SEMANGAT\nTetaplah berusaha."
 	}
 	fmt.Println(notice)
 
@@ -140,6 +163,40 @@ func (s *server) AmbilTema(ctx context.Context, pt *pb.PilihTema) (*pb.TemaList,
 	return &temaList, nil
 }
 
+func (s *server) AmbilMapel(ctx context.Context, pt *pb.PilihMapel) (*pb.MapelList, error) {
+
+	var result []string
+
+	if v, found := kumpulanSoal[pt.GetKelas()]; found {
+
+		for k, _ := range v {
+			result = append(result, k)
+		}
+
+		fmt.Println(result)
+	}
+	mapelList := pb.MapelList{MapelList: result}
+	return &mapelList, nil
+}
+
+func (s *server) AmbilKelas(ctx context.Context, pt *pb.PilihKelas) (*pb.KelasList, error) {
+
+	var result []string
+	if pt.GetTingkat() == "SD" {
+		result = []string{"Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"}
+	} else if pt.GetTingkat() == "SMP" {
+		result = []string{"Kelas 7", "Kelas 8", "Kelas 9"}
+	} else if pt.GetTingkat() == "SMA" {
+		result = []string{"Kelas 10", "Kelas 11", "Kelas 12"}
+	} else if pt.GetTingkat() == "Umum" {
+		result = []string{"Umum"}
+	}
+
+	fmt.Println(result)
+	kelasList := pb.KelasList{KelasList: result}
+	return &kelasList, nil
+}
+
 func (s *server) KirimSoalKeServer(ctx context.Context, req *pb.PaketSoal) (*pb.ServerGuruReply, error) {
 	// fmt.Println(req.GetTingkat())
 	// fmt.Println(req.GetKelas())
@@ -154,6 +211,8 @@ func (s *server) KirimSoalKeServer(ctx context.Context, req *pb.PaketSoal) (*pb.
 	}
 
 	//check if soal exists in tingkat-kelas-matpel-tema
+	//if not exists, mapnya dibuat dulu
+CHECKEXISTS:
 	if _, found := kumpulanSoal[req.GetKelas()]; found {
 		if _, found := kumpulanSoal[req.GetKelas()][req.GetMatpel()]; found {
 			if _, found := kumpulanSoal[req.GetKelas()][req.GetMatpel()]; found {
@@ -163,17 +222,30 @@ func (s *server) KirimSoalKeServer(ctx context.Context, req *pb.PaketSoal) (*pb.
 					//save
 					saveSoal(req.GetTingkat(), req.GetKelas(), req.GetMatpel(), newname, soal)
 					return &pb.ServerGuruReply{Message: ("Paket Soal dengan Tema ini sudah tersedia\nSoal disimpan dengan judul " + newname)}, nil
+				} else {
+					fmt.Println("check 4", kumpulanSoal)
+					saveSoal(req.GetTingkat(), req.GetKelas(), req.GetMatpel(), req.GetTema(), soal)
+					return &pb.ServerGuruReply{Message: ("Paket Soal dengan Tema ini disimpan dengan judul " + req.GetTema())}, nil
 				}
+			} else {
+				kumpulanSoal[req.GetKelas()][req.GetMatpel()][req.GetTema()] = []Soal{}
+				fmt.Println("check 3", kumpulanSoal)
+				goto CHECKEXISTS
 			}
+		} else {
+			kumpulanSoal[req.GetKelas()][req.GetMatpel()] = map[string][]Soal{}
+			fmt.Println("check 2", kumpulanSoal)
+			goto CHECKEXISTS
 		}
+	} else {
+		kumpulanSoal[req.GetKelas()] = map[string]map[string][]Soal{}
+		fmt.Println("check 1", kumpulanSoal)
+		goto CHECKEXISTS
 	}
-
-	saveSoal(req.GetTingkat(), req.GetKelas(), req.GetMatpel(), req.GetTema(), soal)
-	return &pb.ServerGuruReply{Message: ("Paket Soal dengan Tema ini disimpan dengan judul " + req.GetTema())}, nil
-
 }
 func main() {
 	loadSoal()
+	loadUser()
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -182,24 +254,60 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterConnectServer(s, &server{})
 	pb.RegisterGuruServer(s, &server{})
+	pb.RegisterDataServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 
-	pb.RegisterGuruServer(s, &server{})
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+}
+
+func (s *server) CheckLogin(ctx context.Context, il *pb.InputLogin) (*pb.UserData, error) {
+	tempUser := pb.User{}
+	if v, found := userDataList[il.GetUsername()]; found {
+		if il.GetPassword() == v.Password {
+			tempUser = pb.User{Username: v.Username,
+				Password: v.Password,
+				Nama:     v.Nama,
+				Umur:     v.Umur,
+				Status:   v.Status}
+			result := pb.UserData{Notice: "Sukses", User: &tempUser}
+			userInSession = v
+			return &result, nil
+		} else {
+			result := pb.UserData{Notice: "Password anda salah.", User: &tempUser}
+			return &result, nil
+		}
 	}
+
+	result := pb.UserData{Notice: "Username tidak terdaftar.", User: &tempUser}
+	return &result, nil
+}
+
+func (s *server) NewSignUp(ctx context.Context, user *pb.User) (*pb.UserData, error) {
+	tempUser := user
+	if _, found := userDataList[user.GetUsername()]; found {
+		result := pb.UserData{Notice: "Username sudah terdaftar. Tidak bisa mendaftar lagi", User: user}
+		return &result, nil
+	} else {
+		saveUser(tempUser)
+		result := pb.UserData{Notice: "Registrasi sukses! Silahkan login.", User: user}
+		return &result, nil
+	}
+}
+
+func saveUser(user *pb.User) {
+
+	newUser := userData{Username: user.GetUsername(), Password: user.GetPassword(),
+		Nama: user.GetNama(), Umur: user.GetUmur(), Status: user.GetStatus()}
+
+	userDataList[user.GetUsername()] = newUser
+
 }
 
 func saveSoal(ti string, k string, m string, te string, s []Soal) {
 	fmt.Println(ti, k, m, te, s)
-
-	// kumpulanSoal[k][m] = map[string][]Soal{}
 	kumpulanSoal[k][m][te] = s
-
 	fmt.Println(kumpulanSoal)
-
 }
 
 func loadSoal() {
@@ -273,4 +381,19 @@ func loadSoal() {
 	kumpulanSoal["Kelas 2"]["Bahasa Inggris"]["Bab 2"] = arraySoal
 
 	// fmt.Println(kumpulanSoal)
+}
+
+func loadUser() {
+	user1 := userData{Username: "mamat123@yahoo.co.id", Password: "*Mamat123",
+		Nama: "Mamat", Umur: 14, Status: "Siswa"}
+	user2 := userData{Username: "juminten123@yahoo.co.id", Password: "*Juminten123",
+		Nama: "Juminten", Umur: 25, Status: "Guru"}
+	user3 := userData{Username: "shir", Password: "leen",
+		Nama: "Shirleen", Umur: 10, Status: "Siswa"}
+
+	userDataList["mamat123@yahoo.co.id"] = user1
+	userDataList["juminten123@yahoo.co.id"] = user2
+	userDataList["shir"] = user3
+
+	// fmt.Println(userDataList)
 }

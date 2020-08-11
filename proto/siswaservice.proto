@@ -11,6 +11,8 @@ service Connect {
   rpc Soal (PilihanSoal) returns (SoalList) {}
   rpc Hasil (KumpulanJawaban) returns (Result) {}
   rpc AmbilTema(PilihTema) returns (TemaList) {}
+  rpc AmbilMapel(PilihMapel) returns (MapelList) {}
+  rpc AmbilKelas(PilihKelas) returns (KelasList) {}
 }
 
 
@@ -18,6 +20,30 @@ service Connect {
 service Guru {
   rpc KirimSoalKeServer (PaketSoal) returns (ServerGuruReply) {}
 }
+
+service Data {
+  rpc CheckLogin (InputLogin) returns (UserData) {}
+  rpc NewSignUp (User) returns (UserData) {}
+}
+
+message KelasList {
+  repeated string KelasList = 1;
+}
+
+message PilihKelas {
+    string Tingkat = 1;
+}
+
+
+message MapelList {
+  repeated string MapelList = 1;
+}
+
+message PilihMapel {
+    string Tingkat = 1;
+    string Kelas = 2;
+}
+
 message TemaList {
   repeated string TemaList = 1;
 }
@@ -78,4 +104,20 @@ message Result {
   string Result = 1;
 }
 
+message InputLogin {
+  string Username = 1;
+  string Password = 2;
+}
 
+message UserData {
+  string Notice = 1;
+  User User = 2;
+}
+
+message User {
+  string Username = 1;
+  string Password = 2;
+  string Nama = 3;
+  int32 Umur = 4;
+  string Status = 5;
+}
