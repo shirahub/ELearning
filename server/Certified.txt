@@ -1,6 +1,6 @@
 SERTIFIKAT
-KELAS : Kelas 2
-MAPEL : Bahasa Inggris
-TEMA : Bab 1
-NILAI : 80
+KELAS : Umum
+MAPEL : Bahasa Cin(t)a
+TEMA : The Basic of The Basics
+NILAI : 100
 NAMA : Shirleen
